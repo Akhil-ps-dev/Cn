@@ -1,0 +1,79 @@
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+int main(void)
+{
+ char sermsg[200],clmsg[200];
+ int sockdec,clsock,clsize;
+ struct sockaddr_in server_addr,client_addr;
+ 
+ bzero(sermsg,sizeof(sermsg));
+ bzero(clmsg,sizeof(clmsg));
+ 
+ sockdec=socket(AF_INET,SOCK_STREAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(1500);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ bind(sockdec,(struct sockaddr*)&server_addr,sizeof(server_addr));
+ printf("binding is done \n");
+ 
+ listen(sockdec,10);
+ printf("listening...\n");
+ 
+ clsize=sizeof(client_addr);
+ clsock=accept(sockdec,(struct sockaddr*)&client_addr,&clsize);
+ printf("Client is connected to IP:%s and port: %i \n",inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
+ recv(clsock,clmsg,sizeof(clmsg),0);
+ printf("message from client is %s\n",clmsg);
+ 
+ strcpy(sermsg,"this is server's message");
+ send(clsock,sermsg,strlen(sermsg),0);
+ 
+ close(clsock);
+ close(sockdec);
+ return 0;
+ }
+  client
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+int main(void)
+{
+ char sermsg[200],clmsg[200];
+ int sockdec;
+ struct sockaddr_in server_addr;
+ 
+ bzero(sermsg,sizeof(sermsg));
+ bzero(clmsg,sizeof(clmsg));
+ 
+ sockdec=socket(AF_INET,SOCK_STREAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(1500);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ connect(sockdec,(struct sockaddr*)&server_addr,sizeof(server_addr));
+ 
+ printf("enter the message:\n");
+ gets(clmsg);
+ 
+ send(sockdec,clmsg,strlen(clmsg),0);
+ recv(sockdec,sermsg,sizeof(sermsg),0);
+ printf("servermsg is %s\n",sermsg);
+ close(sockdec);
+ return 0;
+ }

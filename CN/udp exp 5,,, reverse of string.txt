@@ -1,0 +1,81 @@
+
+server
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+#include<netinet/in.h>
+
+void main() {
+
+char buffer[500],result[500];
+int socdec, clsize,n,i,j;
+struct sockaddr_in server_addr,client_addr;
+
+ bzero(buffer,sizeof(buffer));
+ bzero(result,sizeof(result));
+ 
+ socdec=socket(AF_INET,SOCK_DGRAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(2531);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ bind(socdec,(const struct sockaddr*)&server_addr,sizeof(server_addr));
+ printf("binding is done \n");
+ 
+ clsize=sizeof(client_addr);
+ n=recvfrom(socdec,buffer,500,0,(struct sockaddr*)&client_addr,&clsize);
+ 
+ buffer[n]='\0';
+ for(i=strlen(buffer)-1,j=0;i>=0;i--,j++) {
+    result[j]=buffer[i];
+  }
+  
+ sendto(socdec,result,strlen(result),0,(const struct sockaddr*)&client_addr,clsize);
+ printf("Reversed string is sent");
+ 
+ close(socdec);
+ }  
+
+client
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+#include<netinet/in.h>
+
+void main() {
+ char buffer[500],result[500];
+ int sockdec;
+ struct sockaddr_in server_addr;
+ 
+ bzero(buffer,sizeof(buffer));
+ bzero(result,sizeof(result));
+ 
+ sockdec=socket(AF_INET,SOCK_DGRAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(2531);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ printf("Enter a string: ");
+ gets(buffer);
+ 
+ sendto(sockdec,buffer,strlen(buffer),0,(const struct sockaddr*)&server_addr,sizeof(server_addr));
+ recvfrom(sockdec,result,500,0,(struct sockaddr*)&server_addr,sizeof(server_addr));
+ printf("Reversed string is %s",result);
+ 
+ close(sockdec);
+ }
+
+
+

@@ -1,0 +1,74 @@
+server
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+int main(void)
+{
+ char s[10],a[10],b[10];
+ int sockdec,clsock,clsize,n1,n2,sum;
+ struct sockaddr_in server_addr,client_addr;
+ 
+ sockdec=socket(AF_INET,SOCK_STREAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(1500);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ bind(sockdec,(struct sockaddr*)&server_addr,sizeof(server_addr));
+ printf("binding is done \n");
+ 
+ listen(sockdec,10);
+ printf("listening...\n");clsize=sizeof(client_addr);
+ clsock=accept(sockdec,(struct sockaddr*)&client_addr,&clsize);
+ printf("Client is connected to IP:%s and port: %i \n",inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
+ recv(clsock,a,sizeof(a),0);
+  recv(clsock,b,sizeof(b),0);
+  n1=atoi(a);
+  n2=atoi(b);
+  sum=n1+n2;
+  sprintf(s, "%d",sum);
+  send(clsock,s,strlen(s),0);
+  close(sockdec);
+  close(clsock);
+  return 0;
+ }
+
+client
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<arpa/inet.h>
+
+int main(void)
+{
+ char s[10],a[10],b[10];
+ int sockdec,clsock,clsize,n1,n2,sum;
+ struct sockaddr_in server_addr;
+ 
+ sockdec=socket(AF_INET,SOCK_STREAM,0);
+ printf("socket is created \n");
+ server_addr.sin_family=AF_INET;
+ server_addr.sin_port=htons(1500);
+ server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
+ 
+ connect(sockdec,(struct sockaddr*)&server_addr,sizeof(server_addr));
+ printf("Enter the first number\n");
+ gets(a);
+ send(sockdec,a,strlen(a),0);
+ printf("Enter the second number\n");
+ gets(b);
+ send(sockdec,b,strlen(b),0);
+ recv(sockdec,s,sizeof(s),0);
+ printf("Sum is %d\n",atoi(s));
+ close(sockdec);
+ return 0;
+}

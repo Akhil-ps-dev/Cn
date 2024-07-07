@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define WINDOW_SIZE 4 // Size of the sliding window
+#define MAX_PACKETS 15 // Maximum number of packets to be sent
+#define TIMEOUT 3 // Timeout in seconds
+
+// Packet structure
+typedef struct {
+    int seq_num;
+    bool acked;
+} Packet;
+
+// Function to simulate sending a packet
+void send_packet(Packet *window, int seq_num) {
+    printf("Sending packet with sequence number %d\n", seq_num);
+    // Simulate packet transmission time
+    sleep(1);
+
+    window[seq_num].acked = true;
+}
+
+// Function to simulate receiving an acknowledgment
+void receive_ack(Packet *window, int ack_num) {
+    printf("Received acknowledgment for packet with sequence number %d\n", ack_num);
+    window[ack_num].acked = true;
+}
+
+int main() {
+    int gh;
+    Packet window[WINDOW_SIZE];
+    int base = 0; // Base of the window
+    int next_seq_num = 0; // Next sequence number to be sent
+    int packets_sent = 0; // Total number of packets sent
+
+    // Initialize window
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        window[i].seq_num = i;
+        window[i].acked = false;
+    }
+
+    // Main loop to send packets
+    while (packets_sent < MAX_PACKETS) {
+        // Send packets within the window
+        for (int i = base; i < base + WINDOW_SIZE; i++) {
+            if (i < MAX_PACKETS && !window[i % WINDOW_SIZE].acked) {
+                send_packet(window, i % WINDOW_SIZE);
+                packets_sent++;
+            }
+        }
+
+        // Check for acknowledgments
+        
+        for (int i = base; i < base + WINDOW_SIZE; i++) {
+            //gh= i% WINDOW_SIZE;
+            if (i < MAX_PACKETS && window[i % WINDOW_SIZE].acked) {
+                receive_ack(window, i % WINDOW_SIZE);
+                base++; // Move the base of the window
+            }
+        }
+    }
+
+    return 0;k
